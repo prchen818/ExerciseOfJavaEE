@@ -5,8 +5,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class PrinterFactory {
-    @Bean
-    public Printer getPrinter(){
+    @Bean("hpPrinter")
+    public Printer getHPPrinter(){
         return new HPPrinter();
+    }
+
+    @Bean("epsonPrinter")
+    public Printer getEpsonPrinter(){
+        return new EpsonPrinter();
     }
 }

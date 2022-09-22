@@ -15,7 +15,6 @@ public class MainClass {
 
         System.out.println("===========================================");
 
-        Computer computer = (Computer) applicationContext.getBean("lenovoComputer");
-        System.out.println(computer);
+        System.out.println(applicationContext.getBean("lenovoComputer"));
     }
 }
