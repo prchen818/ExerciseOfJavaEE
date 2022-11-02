@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.BlogMapper">
+    <resultMap id="blogMapping" type="org.example.Blog">
+        <id property="id" column="blog_id"/>
+        <result property="title" column="blog_title"/>
+        <association property="author_id" javaType="org.example.Author">
+            <id property="id" column="author_id"/>
+            <result property="username" column="author_username"/>
+            <result property="password" column="author_password"/>
+            <result property="email" column="author_email"/>
+            <result property="bio" column="author_bio"/>
+            <result property="favourite_section" column="author_favourite_section"/>
+        </association>
+        <collection property="posts" ofType="org.example.Post">
+            <id property="id" column="post_id"/>
+            <result property="blog_id" column="post_blog_id"/>
+            <result property="author_id" column="post_author_id"/>
+            <result property="created_on" column="post_created_on"/>
+            <result property="section" column="post_section"/>
+            <result property="subject" column="post_subject"/>
+            <result property="body" column="post_body"/>
+            <result property="draft" column="post_draft"/>
+        </collection>
+        <collection property="comments" ofType="org.example.Comment">
+            <id property="id" column="comment_id"/>
+            <result property="name" column="comment_name"/>
+            <result property="post_id" column="comment_post_id"/>
+            <result property="comment" column="comment_text"/>
+        </collection>
+        <collection property="tags" ofType="org.example.Tag">
+            <id property="id" column="tag_id"/>
+            <result property="name" column="tag_name"/>
+        </collection>
+
+    </resultMap>
+
+    <select id="selectBlogById" resultMap="blogMapping">
+        select
+            blog.id as blog_id,
+            blog.title as blog_title,
+            blog.author_id as blog_author_id,
+            author.id as author_id,
+            author.username as author_username,
+            author.password as author_password,
+            author.email as author_email,
+            author.bio as author_bio,
+            author.favourite_section as author_favourite_section,
+            post.id as post_id,
+            post.blog_id as post_blog_id,
+            post.author_id as post_author_id,
+            post.created_on as post_created_on,
+            post.section as post_section,
+            post.subject as post_subject,
+            post.draft as post_draft,
+            post.body as post_body,
+            comment.id as comment_id,
+            comment.post_id as comment_post_id,
+            comment.name as comment_name,
+            comment.comment as comment_text,
+            tag.id as tag_id,
+            tag.name as tag_name
+        from blog
+                 left outer join author on blog.author_id = author.id
+                 left outer join post on blog.id = post.blog_id
+                 left outer join comment on post.id = comment.post_id
+                 left outer join PT on PT.post_id = post.id
+                 left outer join tag on PT.tag_id = post.id
+        where blog.id = #{id}
+    </select>
+
+<!---->
+
+    <resultMap id="authorResultMap" type="org.example.Author">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="email" column="email"/>
+        <result property="bio" column="bio"/>
+        <result property="favourite_section" column="favourite_section"/>
+    </resultMap>
+
+    <select id="findAuthorById" resultMap="authorResultMap">
+        select * from author where id=#{id}
+    </select>
+
+    <select id="findAllAuthor" resultMap="authorResultMap">
+        select * from author
+    </select>
+
+    <resultMap id="blogResultMap" type="org.example.Blog">
+        <id property="id" column="blog_id"/>
+        <result typeHandler="org.example.StateTypeHandler" column="state" javaType="org.example.State" property="state"/>
+        <collection property="author_id" column="author_id" select="findAuthorById"/>
+    </resultMap>
+
+    <select id="findAllBlog" resultMap="blogResultMap">
+        select * from blog
+    </select>
+
+<!---->
+
+    <select id="findAllPost" resultMap="postResultMap">
+        select * from post
+    </select>
+
+    <resultMap id="postResultMap" type="org.example.Post">
+        <id property="id" column="post_id"/>
+        <result property="blog_id" column="blog_id"/>
+        <result property="author_id" column="author_id"/>
+        <result property="created_on" column="created_on"/>
+        <result property="section" column="section"/>
+        <result property="subject" column="subject"/>
+        <result property="body" column="body"/>
+        <result property="draft" column="draft"/>
+
+        <discriminator javaType="int" column="draft">
+            <case value="1" resultType="org.example.DraftPost"/>
+            <case value="0" resultType="org.example.RegularPost"/>
+        </discriminator>
+    </resultMap>
+
+<!--    -->
+    <resultMap id="stateHandler" type="org.example.Blog" autoMapping="true">
+        <result column="state" typeHandler="org.example.StateTypeHandler" property="state"></result>
+    </resultMap>
+
+    <select id="selectStateById" resultType="org.example.Blog" resultMap="stateHandler">
+        select * from blog where id=#{id}
+    </select>
+</mapper>
